@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using CommonMark;
+
 using Newtonsoft.Json.Linq;
 
 using Amazon.Lambda.Core;
@@ -26,7 +28,8 @@ namespace LdLambdaNotify
             string title = json.title;
             Console.WriteLine(title);
 
-            Mailer mail = new Mailer("New LD Change", title, title);
+            string htmlBody = CommonMarkConverter.Convert(title);
+            Mailer mail = new Mailer("New LD Change", title, htmlBody);
             mail.Send().Wait();
             
             return new APIGatewayProxyResponse
