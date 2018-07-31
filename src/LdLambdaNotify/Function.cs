@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json.Linq;
+
 using Amazon.Lambda.Core;
+using Amazon.Lambda.APIGatewayEvents;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.Json.JsonSerializer))]
@@ -12,16 +15,26 @@ namespace LdLambdaNotify
 {
     public class Function
     {
-        
         /// <summary>
-        /// A simple function that takes a string and does a ToUpper
+        /// Main Lambda Handler
         /// </summary>
-        /// <param name="input"></param>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        public string FunctionHandler(string input, ILambdaContext context)
+        /// <param name="apigProxyEvent"></param>
+        /// <returns>APIGatewayResponse</returns>
+        public APIGatewayProxyResponse Handler(APIGatewayProxyRequest apigProxyEvent)
         {
-            return input?.ToUpper();
+            dynamic json = JValue.Parse(apigProxyEvent.Body);
+            string title = json.title;
+            Console.WriteLine(title);
+
+            Mailer mail = new Mailer("New LD Change", title, title);
+            mail.Send().Wait();
+            
+            return new APIGatewayProxyResponse
+            {
+                Body = title,
+                StatusCode = 200,
+            };
+
         }
     }
 }
